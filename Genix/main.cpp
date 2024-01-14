@@ -117,21 +117,23 @@ int main()
 
 	// load and create a texture 
 	// -------------------------
-	unsigned int Texture;
-	glGenTextures(1, &Texture);
-	glBindTexture(GL_TEXTURE_2D, Texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+
+	// texture 1
+	unsigned int Texture1;
+	glGenTextures(1, &Texture1);
+	glBindTexture(GL_TEXTURE_2D, Texture1); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
 
 	// set the texture wrapping parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// load image, create texture and generate mipmaps
 	int Width, Height, NrChannels;
-	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+	// replace it with your own image path.
 	unsigned char *Data = stbi_load("Textures/container.jpg", &Width, &Height, &NrChannels, 0);
 	if (Data)
 	{
@@ -143,6 +145,43 @@ int main()
 		std::cout << "Failed to load texture" << std::endl;
 	}
 	stbi_image_free(Data);
+
+
+	// texture 2
+	unsigned int Texture2;
+	glGenTextures(1, &Texture2);
+	glBindTexture(GL_TEXTURE_2D, Texture2); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// load image, create texture and generate mipmaps
+	stbi_set_flip_vertically_on_load(true);  
+	Data = stbi_load("Textures/awesomeface.png", &Width, &Height, &NrChannels, 0);
+	if (Data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(Data);
+	stbi_set_flip_vertically_on_load(false);  
+
+	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+	// -------------------------------------------------------------------------------------------
+	Shader.Use(); // don't forget to activate/use the shader before setting uniforms!
+	// either set it manually like so:
+	glUniform1i(glGetUniformLocation(Shader.ID, "texture1"), 0);
+	// or set it via the texture class
+	Shader.SetInt("texture2", 1);
 	
 	// Loop until window closed
 	while (!glfwWindowShouldClose(MainWindow))
@@ -151,6 +190,12 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// bind textures on corresponding texture units
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, Texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, Texture2);
+		
 		// render the triangle
 		Shader.Use();
 		glBindVertexArray(VAO);
