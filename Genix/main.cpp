@@ -1,6 +1,9 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Shader.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -10,7 +13,7 @@ constexpr GLint WIDTH = 1920;
 constexpr GLint HEIGHT = 1080;
 
 int main()
-{
+{	
 	// Init GLFW
 	if (!glfwInit())
 	{
@@ -63,11 +66,11 @@ int main()
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 	constexpr GLfloat Vertices[] = {
-		// positions          // colors           // texture coords
-		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-	   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-	   -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+		// positions          // texture coords
+		0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
+		0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
+	   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
+	   -0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
    };
 	
 	constexpr unsigned int Indices[] = {  // note that we start from 0!
@@ -92,16 +95,12 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
 	
 	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
 	// texture coord attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	// Note that this is allowed, the call to glVertexAttribPointer registered VBO
 	// as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
@@ -196,10 +195,18 @@ int main()
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, Texture2);
 		
-		// render the triangle
+		// create transformations
+		glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		// get matrix's uniform location and set matrix
 		Shader.Use();
+		const unsigned int TransformLoc = glGetUniformLocation(Shader.ID, "transform");
+		glUniformMatrix4fv(TransformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
+		// render container
 		glBindVertexArray(VAO);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
