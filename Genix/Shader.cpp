@@ -75,10 +75,56 @@ void Shader::SetInt(const std::string& InName, const int InValue) const
 	glUniform1i(glGetUniformLocation(ID, InName.c_str()), InValue); 
 }
 
-void Shader::SetFloat(const std::string& InName, const float InValue) const
-{ 
-	glUniform1f(glGetUniformLocation(ID, InName.c_str()), InValue); 
+void Shader::SetFloat(const std::string& InName, float InValue) const
+{
+    glUniform1f(glGetUniformLocation(ID, InName.c_str()), InValue);
 }
+
+void Shader::SetVec2(const std::string& InName, glm::vec2& Value) const
+{
+    glUniform2fv(glGetUniformLocation(ID, InName.c_str()), 1, &Value[0]);
+}
+
+void Shader::SetVec2(const std::string& InName, const float X, const float Y) const
+{
+    glUniform2f(glGetUniformLocation(ID, InName.c_str()), X, Y);
+}
+
+void Shader::SetVec3(const std::string& InName, glm::vec3& Value) const
+{
+    glUniform3fv(glGetUniformLocation(ID, InName.c_str()), 1, &Value[0]);
+}
+
+void Shader::SetVec3(const std::string& InName, const float X, const float Y, const float Z) const
+{
+    glUniform3f(glGetUniformLocation(ID, InName.c_str()), X, Y, Z);
+}
+
+void Shader::SetVec4(const std::string& InName, glm::vec4& Value) const
+{
+    glUniform4fv(glGetUniformLocation(ID, InName.c_str()), 1, &Value[0]);
+}
+
+void Shader::SetVec4(const std::string& InName, const float X, const float Y, const float Z, const float W) const
+{
+    glUniform4f(glGetUniformLocation(ID, InName.c_str()), X, Y, Z, W);
+}
+
+void Shader::SetMat2(const std::string& InName, glm::mat2& Mat) const
+{
+    glUniformMatrix2fv(glGetUniformLocation(ID, InName.c_str()), 1, GL_FALSE, &Mat[0][0]);
+}
+
+void Shader::SetMat3(const std::string& InName, glm::mat3& Mat) const
+{
+    glUniformMatrix3fv(glGetUniformLocation(ID, InName.c_str()), 1, GL_FALSE, &Mat[0][0]);
+}
+
+void Shader::SetMat4(const std::string& InName, glm::mat4& Mat) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(ID, InName.c_str()), 1, GL_FALSE, &Mat[0][0]);
+}
+
 
 void Shader::CheckCompileErrors(unsigned InShader, const std::string& Type)
 {
