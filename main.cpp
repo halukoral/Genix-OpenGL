@@ -13,7 +13,7 @@
 
 void MouseCallback(GLFWwindow* Window, double Xpos, double Ypos);
 void ScrollCallback(GLFWwindow* Window, double Xoffset, double Yoffset);
-void ProcessInput(GLFWwindow *Window);
+void ProcessInput(GLFWwindow* Window);
 
 constexpr GLint WIDTH = 1920;
 constexpr GLint HEIGHT = 1080;
@@ -39,7 +39,7 @@ int main()
 		glfwTerminate();
 		return 1;
 	}
-	
+
 	// OpenGL version
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -64,7 +64,7 @@ int main()
 	glfwMakeContextCurrent(MainWindow);
 	glfwSetCursorPosCallback(MainWindow, MouseCallback);
 	glfwSetScrollCallback(MainWindow, ScrollCallback);
-	
+
 	// Tell GLFW to capture our mouse
 	glfwSetInputMode(MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -81,7 +81,7 @@ int main()
 
 	// Configure global opengl state
 	glEnable(GL_DEPTH_TEST);
-	
+
 	// --------------------------------End Of Initialization Phase--------------------------------
 	// -------------------------------------------------------------------------------------------
 
@@ -135,18 +135,18 @@ int main()
 		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
-	
+
 	// World space positions of our cubes
 	constexpr glm::vec3 CubePositions[] = {
-		glm::vec3( 0.0f,  0.0f,  0.0f),
-		glm::vec3( 2.0f,  5.0f, -15.0f),
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
 		glm::vec3(-1.5f, -2.2f, -2.5f),
 		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3( 2.4f, -0.4f, -3.5f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
 		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3( 1.3f, -2.0f, -2.5f),
-		glm::vec3( 1.5f,  2.0f, -2.5f),
-		glm::vec3( 1.5f,  0.2f, -1.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
 		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
@@ -171,7 +171,7 @@ int main()
 	// Position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(0);
-	
+
 	// Texture coord attribute
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
@@ -179,7 +179,7 @@ int main()
 	/* Make the new VBO active. */
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	
+
 	// uncomment this call to draw in wireframe polygons.
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -203,7 +203,7 @@ int main()
 	// Load image, create texture and generate mipmaps
 	int Width, Height, NrChannels;
 	// Replace it with your own image path.
-	unsigned char *Data = stbi_load("Textures/container.jpg", &Width, &Height, &NrChannels, 0);
+	unsigned char* Data = stbi_load("Textures/container.jpg", &Width, &Height, &NrChannels, 0);
 	if (Data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
@@ -231,7 +231,7 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Load image, create texture and generate mipmaps
-	stbi_set_flip_vertically_on_load(true);  
+	stbi_set_flip_vertically_on_load(true);
 	Data = stbi_load("Textures/awesomeface.png", &Width, &Height, &NrChannels, 0);
 	if (Data)
 	{
@@ -243,9 +243,9 @@ int main()
 		std::cout << "Failed to load texture" << std::endl;
 	}
 	stbi_image_free(Data);
-	stbi_set_flip_vertically_on_load(false);  
+	stbi_set_flip_vertically_on_load(false);
 
-	
+
 	/* ----------------------------------------- Shader --------------------------------------- */
 	/* ---------------------------------------------------------------------------------------- */
 
@@ -261,7 +261,7 @@ int main()
 	/* ---------------------------------------------------------------------------------------- */
 	/* ---------------------------------------------------------------------------------------- */
 
-	
+
 	// Loop until window closed
 	while (!glfwWindowShouldClose(MainWindow))
 	{
@@ -271,7 +271,7 @@ int main()
 		LastFrame = CurrentFrame;
 
 		ProcessInput(MainWindow);
-		
+
 		// Clear window
 		glClearColor(0.2f, 0.3f, 0.3f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
@@ -281,7 +281,7 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, Texture1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, Texture2);
-		
+
 		// Activate shader
 		Shader.Use();
 
@@ -306,7 +306,7 @@ int main()
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-		
+
 		// Glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(MainWindow);
@@ -322,7 +322,7 @@ int main()
 	// Glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
 	glfwTerminate();
-	
+
 	return 0;
 }
 
@@ -346,7 +346,7 @@ void MouseCallback(GLFWwindow* Window, double Xpos, double Ypos)
 	LastX = X;
 	LastY = Y;
 
-	Camera.ProcessMouseMovement(Xoffset, Yoffset);	
+	Camera.ProcessMouseMovement(Xoffset, Yoffset);
 }
 
 // GlFW: whenever the mouse scroll wheel scrolls, this callback is called
@@ -359,7 +359,7 @@ void ScrollCallback(GLFWwindow* Window, double Xoffset, double Yoffset)
 
 // Process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void ProcessInput(GLFWwindow *Window)
+void ProcessInput(GLFWwindow* Window)
 {
 	if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{

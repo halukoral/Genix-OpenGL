@@ -1,6 +1,6 @@
-﻿#include "Camera.h"
+#include "Camera.h"
 
-Camera::Camera(glm::vec3 InPosition, glm::vec3 InUp, float InYaw, float InPitch): Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+Camera::Camera(glm::vec3 InPosition, glm::vec3 InUp, float InYaw, float InPitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 {
 	Position = InPosition;
 	WorldUp = InUp;
@@ -40,7 +40,7 @@ void Camera::ProcessMouseMovement(float Xoffset, float Yoffset, const bool Const
 	Xoffset *= MouseSensitivity;
 	Yoffset *= MouseSensitivity;
 
-	Yaw   += Xoffset;
+	Yaw += Xoffset;
 	Pitch += Yoffset;
 
 	// make sure that when pitch is out of bounds, screen doesn't get flipped
@@ -83,5 +83,5 @@ void Camera::UpdateCameraVectors()
 	Front = glm::normalize(LocalFront);
 	// also re-calculate the Right and Up vector
 	Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-	Up    = glm::normalize(glm::cross(Right, Front));
+	Up = glm::normalize(glm::cross(Right, Front));
 }
