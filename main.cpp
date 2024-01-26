@@ -10,6 +10,8 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
 
 void MouseCallback(GLFWwindow* Window, double Xpos, double Ypos);
 void ScrollCallback(GLFWwindow* Window, double Xoffset, double Yoffset);
@@ -82,6 +84,14 @@ int main()
 	// Configure global opengl state
 	glEnable(GL_DEPTH_TEST);
 
+	// Initialize ImGUI
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	const ImGuiIO& Io = ImGui::GetIO(); (void)Io;
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(MainWindow, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
+	
 	// --------------------------------End Of Initialization Phase--------------------------------
 	// -------------------------------------------------------------------------------------------
 
@@ -272,6 +282,11 @@ int main()
 
 		ProcessInput(MainWindow);
 
+		// Tell OpenGL a new frame is about to begin
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		
 		// Clear window
 		glClearColor(0.2f, 0.3f, 0.3f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
@@ -307,12 +322,32 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
+		// ImGUI window creation
+		ImGui::Begin("My name is window, ImGUI window");
+		// Text that appears in the window
+		ImGui::Text("Hello there adventurer!");
+		// Ends the window
+		ImGui::End();
+
+		
+		// Renders the ImGUI elements
+		// --------------------------
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		
 		// Glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(MainWindow);
 		glfwPollEvents();
 	}
 
+	// Deletes all ImGUI instances
+	// ---------------------------
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
+	
 	// Optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
 	glDeleteVertexArrays(1, &VAO);
