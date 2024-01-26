@@ -2,7 +2,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <GL/glew.h>
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
@@ -29,7 +28,7 @@ public:
     void ProcessKeyboard(const Camera_Movement Direction, const float DeltaTime);
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-    void ProcessMouseMovement(float Xoffset, float Yoffset, const GLboolean ConstrainPitch = true);
+    void ProcessMouseMovement(float Xoffset, float Yoffset, const bool ConstrainPitch = true);
 
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
     void ProcessMouseScroll(const float Yoffset);

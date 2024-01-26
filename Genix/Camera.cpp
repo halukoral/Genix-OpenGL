@@ -35,7 +35,7 @@ void Camera::ProcessKeyboard(const Camera_Movement Direction, const float DeltaT
 	}
 }
 
-void Camera::ProcessMouseMovement(float Xoffset, float Yoffset, const GLboolean ConstrainPitch)
+void Camera::ProcessMouseMovement(float Xoffset, float Yoffset, const bool ConstrainPitch)
 {
 	Xoffset *= MouseSensitivity;
 	Yoffset *= MouseSensitivity;

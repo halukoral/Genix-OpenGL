@@ -1,5 +1,5 @@
 #include <iostream>
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -68,15 +68,12 @@ int main()
 	// Tell GLFW to capture our mouse
 	glfwSetInputMode(MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	// Allow modern extension features
-	glewExperimental = GL_TRUE;
-
-	if (glewInit() != GLEW_OK)
+	// glad: load all OpenGL function pointers
+	// ---------------------------------------
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "GLEW initialization failed!" << std::endl;
-		glfwDestroyWindow(MainWindow);
-		glfwTerminate();
-		return 1;
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return -1;
 	}
 
 	// Setup viewport size
