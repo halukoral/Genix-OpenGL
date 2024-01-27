@@ -31,6 +31,9 @@ bool FirstMouse = true;
 float DeltaTime = 0.0f;	// Current - Last
 float LastFrame = 0.0f;
 
+// Lighting
+glm::vec3 LightPos(1.2f, 1.0f, 2.0f);
+
 int main()
 {
 	// --------------------------------Initialization Phase---------------------------------------
@@ -99,79 +102,83 @@ int main()
 
 	// Build and compile our shader program
 	// ------------------------------------
-	const Shader Shader("Shaders/shader.vert", "Shaders/shader.frag");
-
+	const Shader LightShader("Shaders/LightShader.vert", "Shaders/LightShader.frag");
+	const Shader CubeShader("Shaders/CubeShader.vert", "Shaders/CubeShader.frag");
+	
 	// Set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 	constexpr GLfloat Vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f, 
+		 0.5f, -0.5f, -0.5f,  
+		 0.5f,  0.5f, -0.5f,  
+		 0.5f,  0.5f, -0.5f,  
+		-0.5f,  0.5f, -0.5f, 
+		-0.5f, -0.5f, -0.5f, 
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f, 
+		 0.5f, -0.5f,  0.5f,  
+		 0.5f,  0.5f,  0.5f,  
+		 0.5f,  0.5f,  0.5f,  
+		-0.5f,  0.5f,  0.5f, 
+		-0.5f, -0.5f,  0.5f, 
 
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, 
+		-0.5f,  0.5f, -0.5f, 
+		-0.5f, -0.5f, -0.5f, 
+		-0.5f, -0.5f, -0.5f, 
+		-0.5f, -0.5f,  0.5f, 
+		-0.5f,  0.5f,  0.5f, 
 
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  
+		 0.5f,  0.5f, -0.5f,  
+		 0.5f, -0.5f, -0.5f,  
+		 0.5f, -0.5f, -0.5f,  
+		 0.5f, -0.5f,  0.5f,  
+		 0.5f,  0.5f,  0.5f,  
 
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, 
+		 0.5f, -0.5f, -0.5f,  
+		 0.5f, -0.5f,  0.5f,  
+		 0.5f, -0.5f,  0.5f,  
+		-0.5f, -0.5f,  0.5f, 
+		-0.5f, -0.5f, -0.5f, 
 
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		-0.5f,  0.5f, -0.5f, 
+		 0.5f,  0.5f, -0.5f,  
+		 0.5f,  0.5f,  0.5f,  
+		 0.5f,  0.5f,  0.5f,  
+		-0.5f,  0.5f,  0.5f, 
+		-0.5f,  0.5f, -0.5f, 
 	};
 
-	// World space positions of our cubes
-	constexpr glm::vec3 CubePositions[] = {
-		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
+	/* --------------------------------- Initialise VAO & VBO --------------------------------- */
+	/* ---------------------------------------------------------------------------------------- */
 
 	/* Create variables to hold the VBO and the VAO identifiers */
-	GLuint VAO, VBO; //EBO;
-
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	/* ------------------------------------ Initialise VBO ------------------------------------ */
-	/* ---------------------------------------------------------------------------------------- */
+	GLuint CubeVAO, LightVAO, VBO; //EBO;
 
 	/* Create a new VBO and use the VBO to store the id */
 	glGenBuffers(1, &VBO);
+
+	// Cube
+	// ----
+	glGenVertexArrays(1, &CubeVAO);
+	glBindVertexArray(CubeVAO);
+	
+	/* Make the new VBO active */
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	/* Upload vertex data to the video device */
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+
+	// Position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// Light
+	// -----
+	glGenVertexArrays(1, &LightVAO);
+	glBindVertexArray(LightVAO);
 
 	/* Make the new VBO active */
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -180,98 +187,11 @@ int main()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
 
 	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-
-	// Texture coord attribute
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	/* Make the new VBO active. */
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 
 	// uncomment this call to draw in wireframe polygons.
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	/* ------------------------------- Load and create a texture ------------------------------- */
-	/* ---------------------------------------------------------------------------------------- */
-
-	// Texture 1
-	unsigned int Texture1;
-	glGenTextures(1, &Texture1);
-	glBindTexture(GL_TEXTURE_2D, Texture1);
-	// All upcoming GL_TEXTURE_2D operations now have effect on this texture object
-
-	// Set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// Set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// Load image, create texture and generate mipmaps
-	int Width, Height, NrChannels;
-	// Replace it with your own image path.
-	unsigned char* Data = stbi_load("Textures/container.jpg", &Width, &Height, &NrChannels, 0);
-	if (Data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	stbi_image_free(Data);
-
-
-	// Texture 2
-	unsigned int Texture2;
-	glGenTextures(1, &Texture2);
-	glBindTexture(GL_TEXTURE_2D, Texture2);
-	// All upcoming GL_TEXTURE_2D operations now have effect on this texture object
-
-	// Set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// Set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// Load image, create texture and generate mipmaps
-	stbi_set_flip_vertically_on_load(true);
-	Data = stbi_load("Textures/awesomeface.png", &Width, &Height, &NrChannels, 0);
-	if (Data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	stbi_image_free(Data);
-	stbi_set_flip_vertically_on_load(false);
-
-
-	/* ----------------------------------------- Shader --------------------------------------- */
-	/* ---------------------------------------------------------------------------------------- */
-
-	/* Set shader program as being actively used */
-	Shader.Use();
-
-	// don't forget to activate/use the shader before setting uniforms!
-	// either set it manually like so:
-	glUniform1i(glGetUniformLocation(Shader.ID, "texture1"), 0);
-	// or set it via the texture class
-	Shader.SetInt("texture2", 1);
-
-	/* ---------------------------------------------------------------------------------------- */
-	/* ---------------------------------------------------------------------------------------- */
-
 
 	// Loop until window closed
 	while (!glfwWindowShouldClose(MainWindow))
@@ -289,39 +209,39 @@ int main()
 		ImGui::NewFrame();
 		
 		// Clear window
-		glClearColor(0.2f, 0.3f, 0.3f, 1.f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
-		// Bind textures on corresponding texture units
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, Texture2);
+		// Be sure to activate shader when setting uniforms/drawing objects
+		CubeShader.Use();
+		CubeShader.SetVec3("objectColor", 1.0f, 0.5f, 0.31f);
+		CubeShader.SetVec3("lightColor",  1.0f, 1.0f, 1.0f);
 
-		// Activate shader
-		Shader.Use();
-
-		// Pass projection matrix to shader (note that in this case it could change every frame)
+		// view/projection transformations
 		glm::mat4 Projection = glm::perspective(glm::radians(Camera.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-		Shader.SetMat4("projection", Projection);
-
-		// Camera/view transformation
 		glm::mat4 View = Camera.GetViewMatrix();
-		Shader.SetMat4("view", View);
+		CubeShader.SetMat4("projection", Projection);
+		CubeShader.SetMat4("view", View);
 
-		// Render boxes
-		glBindVertexArray(VAO);
-		for (unsigned int i = 0; i < 10; i++)
-		{
-			// Calculate the model matrix for each object and pass it to shader before drawing
-			glm::mat4 Model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-			Model = glm::translate(Model, CubePositions[i]);
-			const float Angle = 20.0f * i;
-			Model = glm::rotate(Model, glm::radians(Angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			Shader.SetMat4("model", Model);
+		// world transformation
+		glm::mat4 Model = glm::mat4(1.0f);
+		CubeShader.SetMat4("model", Model);
 
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		// render the cube
+		glBindVertexArray(CubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// also draw the lamp object
+		LightShader.Use();
+		LightShader.SetMat4("projection", Projection);
+		LightShader.SetMat4("view", View);
+		Model = glm::mat4(1.0f);
+		Model = glm::translate(Model, LightPos);
+		Model = glm::scale(Model, glm::vec3(0.2f)); // a smaller cube
+		LightShader.SetMat4("model", Model);
+
+		glBindVertexArray(LightVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// ImGUI window creation
 		ImGui::Begin("My name is window, ImGUI window");
@@ -351,9 +271,9 @@ int main()
 	
 	// Optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &CubeVAO);
+	glDeleteVertexArrays(1, &LightVAO);
 	glDeleteBuffers(1, &VBO);
-	//glDeleteBuffers(1, &EBO);
 
 	// Glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
