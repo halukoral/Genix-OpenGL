@@ -13,6 +13,7 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
+void FramebufferSizeCallback(GLFWwindow* Window, int Width, int Height);
 void MouseCallback(GLFWwindow* Window, double Xpos, double Ypos);
 void ScrollCallback(GLFWwindow* Window, double Xoffset, double Yoffset);
 void ProcessInput(GLFWwindow* Window);
@@ -62,8 +63,8 @@ int main()
 	int BufferWidth, BufferHeight;
 	glfwGetFramebufferSize(MainWindow, &BufferWidth, &BufferHeight);
 
-	// Set context for GLEW to use
 	glfwMakeContextCurrent(MainWindow);
+	glfwSetFramebufferSizeCallback(MainWindow, FramebufferSizeCallback);
 	glfwSetCursorPosCallback(MainWindow, MouseCallback);
 	glfwSetScrollCallback(MainWindow, ScrollCallback);
 
@@ -359,6 +360,15 @@ int main()
 	glfwTerminate();
 
 	return 0;
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void FramebufferSizeCallback(GLFWwindow* Window, int Width, int Height)
+{
+	// make sure the viewport matches the new window dimensions; note that width and 
+	// height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, Width, Height);
 }
 
 // GlFW: whenever the mouse moves, this callback is called
