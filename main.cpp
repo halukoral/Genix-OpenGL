@@ -106,46 +106,53 @@ int main()
 	
 	// Set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
-	constexpr float Vertices[] = {
-		0.5f,  0.5f, 0.0f,  // top right
-		0.5f, -0.5f, 0.0f,  // bottom right
-	   -0.5f, -0.5f, 0.0f,  // bottom left
-	   -0.5f,  0.5f, 0.0f   // top left 
-   };
-	unsigned int Indices[] = {  // note that we start from 0!
-		0, 1, 3,  // first Triangle
-		1, 2, 3   // second Triangle
+	constexpr float FirstTriangle[] = {
+		-0.9f, -0.5f, 0.0f,  // left 
+		-0.0f, -0.5f, 0.0f,  // right
+		-0.45f, 0.5f, 0.0f,  // top 
+	};
+	constexpr float SecondTriangle[] = {
+		0.0f, -0.5f, 0.0f,  // left
+		0.9f, -0.5f, 0.0f,  // right
+		0.45f, 0.5f, 0.0f   // top 
 	};
 		
 	/* --------------------------------- Initialise VAO & VBO --------------------------------- */
 	/* ---------------------------------------------------------------------------------------- */
 
 	/* Create variables to hold the VBO and the VAO identifiers */
-	GLuint VAO, VBO, EBO;
+	GLuint VAO_1, VBO_1, VAO_2, VBO_2;
 
-	/* Create a new VBO (EBO) and use the VBO (EBO) to store the id */
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	/* Create a new VBO and use the VBO to store the id */
+	glGenBuffers(1, &VBO_1);
 	
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	glGenVertexArrays(1, &VAO_1);
+	glBindVertexArray(VAO_1);
 	
 	/* Make the new VBO active */
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	/* Upload vertex data to the video device */
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-
-	/* Make the new EBO active */
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-	/* Upload vertex data to the video device */
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_1);
 	
+	/* Upload vertex data to the video device */
+	glBufferData(GL_ARRAY_BUFFER, sizeof(FirstTriangle), FirstTriangle, GL_STATIC_DRAW);
 	// Position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
+	/* Create a new VBO and use the VBO to store the id */
+	glGenBuffers(1, &VBO_2);
+	
+	glGenVertexArrays(1, &VAO_2);
+	glBindVertexArray(VAO_2);
+	
+	/* Make the new VBO active */
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_2);
+	
+	/* Upload vertex data to the video device */
+	glBufferData(GL_ARRAY_BUFFER, sizeof(SecondTriangle), SecondTriangle, GL_STATIC_DRAW);
+	// Position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	
 	// uncomment this call to draw in wireframe polygons.
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -171,9 +178,12 @@ int main()
 		// Be sure to activate shader when setting uniforms/drawing objects
 		Shader.Use();
 
-		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(VAO_1); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
+		glBindVertexArray(VAO_2); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		
 		// ImGUI window creation
 		ImGui::Begin("My name is window, ImGUI window");
 		// Text that appears in the window
@@ -202,8 +212,8 @@ int main()
 	
 	// Optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(1, &VAO_1);
+	glDeleteBuffers(1, &VBO_1);
 
 	// Glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
