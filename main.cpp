@@ -102,68 +102,33 @@ int main()
 
 	// Build and compile our shader program
 	// ------------------------------------
-	const Shader LightShader("Shaders/LightShader.vert", "Shaders/LightShader.frag");
-	const Shader CubeShader("Shaders/CubeShader.vert", "Shaders/CubeShader.frag");
+	const Shader Shader("Shaders/CubeShader.vert", "Shaders/CubeShader.frag");
 	
 	// Set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
-	constexpr GLfloat Vertices[] = {
-		-0.5f, -0.5f, -0.5f, 
-		 0.5f, -0.5f, -0.5f,  
-		 0.5f,  0.5f, -0.5f,  
-		 0.5f,  0.5f, -0.5f,  
-		-0.5f,  0.5f, -0.5f, 
-		-0.5f, -0.5f, -0.5f, 
-
-		-0.5f, -0.5f,  0.5f, 
-		 0.5f, -0.5f,  0.5f,  
-		 0.5f,  0.5f,  0.5f,  
-		 0.5f,  0.5f,  0.5f,  
-		-0.5f,  0.5f,  0.5f, 
-		-0.5f, -0.5f,  0.5f, 
-
-		-0.5f,  0.5f,  0.5f, 
-		-0.5f,  0.5f, -0.5f, 
-		-0.5f, -0.5f, -0.5f, 
-		-0.5f, -0.5f, -0.5f, 
-		-0.5f, -0.5f,  0.5f, 
-		-0.5f,  0.5f,  0.5f, 
-
-		 0.5f,  0.5f,  0.5f,  
-		 0.5f,  0.5f, -0.5f,  
-		 0.5f, -0.5f, -0.5f,  
-		 0.5f, -0.5f, -0.5f,  
-		 0.5f, -0.5f,  0.5f,  
-		 0.5f,  0.5f,  0.5f,  
-
-		-0.5f, -0.5f, -0.5f, 
-		 0.5f, -0.5f, -0.5f,  
-		 0.5f, -0.5f,  0.5f,  
-		 0.5f, -0.5f,  0.5f,  
-		-0.5f, -0.5f,  0.5f, 
-		-0.5f, -0.5f, -0.5f, 
-
-		-0.5f,  0.5f, -0.5f, 
-		 0.5f,  0.5f, -0.5f,  
-		 0.5f,  0.5f,  0.5f,  
-		 0.5f,  0.5f,  0.5f,  
-		-0.5f,  0.5f,  0.5f, 
-		-0.5f,  0.5f, -0.5f, 
+	constexpr float Vertices[] = {
+		0.5f,  0.5f, 0.0f,  // top right
+		0.5f, -0.5f, 0.0f,  // bottom right
+	   -0.5f, -0.5f, 0.0f,  // bottom left
+	   -0.5f,  0.5f, 0.0f   // top left 
+   };
+	unsigned int Indices[] = {  // note that we start from 0!
+		0, 1, 3,  // first Triangle
+		1, 2, 3   // second Triangle
 	};
-
+		
 	/* --------------------------------- Initialise VAO & VBO --------------------------------- */
 	/* ---------------------------------------------------------------------------------------- */
 
 	/* Create variables to hold the VBO and the VAO identifiers */
-	GLuint CubeVAO, LightVAO, VBO; //EBO;
+	GLuint VAO, VBO, EBO;
 
-	/* Create a new VBO and use the VBO to store the id */
+	/* Create a new VBO (EBO) and use the VBO (EBO) to store the id */
 	glGenBuffers(1, &VBO);
-
-	// Cube
-	// ----
-	glGenVertexArrays(1, &CubeVAO);
-	glBindVertexArray(CubeVAO);
+	glGenBuffers(1, &EBO);
+	
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
 	
 	/* Make the new VBO active */
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -171,21 +136,12 @@ int main()
 	/* Upload vertex data to the video device */
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
 
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	// Light
-	// -----
-	glGenVertexArrays(1, &LightVAO);
-	glBindVertexArray(LightVAO);
-
-	/* Make the new VBO active */
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	/* Make the new EBO active */
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
 	/* Upload vertex data to the video device */
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+	
 	// Position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -213,35 +169,10 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
 		// Be sure to activate shader when setting uniforms/drawing objects
-		CubeShader.Use();
-		CubeShader.SetVec3("objectColor", 1.0f, 0.5f, 0.31f);
-		CubeShader.SetVec3("lightColor",  1.0f, 1.0f, 1.0f);
+		Shader.Use();
 
-		// view/projection transformations
-		glm::mat4 Projection = glm::perspective(glm::radians(Camera.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-		glm::mat4 View = Camera.GetViewMatrix();
-		CubeShader.SetMat4("projection", Projection);
-		CubeShader.SetMat4("view", View);
-
-		// world transformation
-		glm::mat4 Model = glm::mat4(1.0f);
-		CubeShader.SetMat4("model", Model);
-
-		// render the cube
-		glBindVertexArray(CubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		// also draw the lamp object
-		LightShader.Use();
-		LightShader.SetMat4("projection", Projection);
-		LightShader.SetMat4("view", View);
-		Model = glm::mat4(1.0f);
-		Model = glm::translate(Model, LightPos);
-		Model = glm::scale(Model, glm::vec3(0.2f)); // a smaller cube
-		LightShader.SetMat4("model", Model);
-
-		glBindVertexArray(LightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// ImGUI window creation
 		ImGui::Begin("My name is window, ImGUI window");
@@ -271,8 +202,7 @@ int main()
 	
 	// Optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &CubeVAO);
-	glDeleteVertexArrays(1, &LightVAO);
+	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 
 	// Glfw: terminate, clearing all previously allocated GLFW resources.
@@ -319,18 +249,19 @@ void MouseCallback(GLFWwindow* Window, double Xpos, double Ypos)
 void ScrollCallback(GLFWwindow* Window, double Xoffset, double Yoffset)
 {
 	Camera.ProcessMouseScroll(static_cast<float>(Yoffset));
-
 }
 
 // Process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void ProcessInput(GLFWwindow* Window)
 {
+	// ESC
 	if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(Window, true);
 	}
 
+	// WASD
 	if (glfwGetKey(Window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		Camera.ProcessKeyboard(FORWARD, DeltaTime);
