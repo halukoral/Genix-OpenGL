@@ -102,7 +102,8 @@ int main()
 
 	// Build and compile our shader program
 	// ------------------------------------
-	const Shader Shader("Shaders/CubeShader.vert", "Shaders/CubeShader.frag");
+	const Shader Shader_01("Shaders/CubeShader.vert", "Shaders/CubeShader.frag");
+	const Shader Shader_02("Shaders/LightShader.vert", "Shaders/LightShader.frag");
 	
 	// Set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -176,10 +177,13 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
 		// Be sure to activate shader when setting uniforms/drawing objects
-		Shader.Use();
+		Shader_01.Use();
 
 		glBindVertexArray(VAO_1); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		// Be sure to activate shader when setting uniforms/drawing objects
+		Shader_02.Use();
 
 		glBindVertexArray(VAO_2); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 		glDrawArrays(GL_TRIANGLES, 0, 3);
