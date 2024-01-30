@@ -46,8 +46,8 @@
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Shaders\Cubeshader.frag" />
-    <Content Include="Shaders\Cubeshader.vert" />
+    <Content Include="Shaders\Material.frag" />
+    <Content Include="Shaders\Material.vert" />
     <Content Include="Shaders\LightShader.frag" />
     <Content Include="Shaders\LightShader.vert" />
   </ItemGroup>

@@ -103,7 +103,7 @@ int main()
 	// Build and compile our shader program
 	// ------------------------------------
 	const Shader LightShader("Shaders/LightShader.vert", "Shaders/LightShader.frag");
-	const Shader CubeShader("Shaders/CubeShader.vert", "Shaders/CubeShader.frag");
+	const Shader CubeMaterial("Shaders/Material.vert", "Shaders/Material.frag");
 	
 	// Set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -215,22 +215,37 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
-		// Be sure to activate shader when setting uniforms/drawing objects
-		CubeShader.Use();
-		CubeShader.SetVec3("objectColor", 1.0f, 0.5f, 0.31f);
-		CubeShader.SetVec3("lightColor",  1.0f, 1.0f, 1.0f);
-		CubeShader.SetVec3("lightPos", LightPos);
-		CubeShader.SetVec3("viewPos", Camera.Position);
-		
+		// be sure to activate shader when setting uniforms/drawing objects
+		CubeMaterial.Use();
+		CubeMaterial.SetVec3("light.position", LightPos);
+		CubeMaterial.SetVec3("viewPos", Camera.Position);
+
+		// light properties
+		glm::vec3 LightColor;
+		LightColor.x = static_cast<float>(sin(glfwGetTime() * 2.0));
+		LightColor.y = static_cast<float>(sin(glfwGetTime() * 0.7));
+		LightColor.z = static_cast<float>(sin(glfwGetTime() * 1.3));
+		glm::vec3 DiffuseColor = LightColor   * glm::vec3(0.5f); // decrease the influence
+		glm::vec3 AmbientColor = DiffuseColor * glm::vec3(0.2f); // low influence
+		CubeMaterial.SetVec3("light.ambient", AmbientColor);
+		CubeMaterial.SetVec3("light.diffuse", DiffuseColor);
+		CubeMaterial.SetVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+		// material properties
+		CubeMaterial.SetVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+		CubeMaterial.SetVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+		CubeMaterial.SetVec3("material.specular", 0.5f, 0.5f, 0.5f); // specular lighting doesn't have full effect on this object's material
+		CubeMaterial.SetFloat("material.shininess", 32.0f);
+
 		// view/projection transformations
 		glm::mat4 Projection = glm::perspective(glm::radians(Camera.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 		glm::mat4 View = Camera.GetViewMatrix();
-		CubeShader.SetMat4("projection", Projection);
-		CubeShader.SetMat4("view", View);
+		CubeMaterial.SetMat4("projection", Projection);
+		CubeMaterial.SetMat4("view", View);
 
 		// world transformation
 		glm::mat4 Model = glm::mat4(1.0f);
-		CubeShader.SetMat4("model", Model);
+		CubeMaterial.SetMat4("model", Model);
 
 		// render the cube
 		glBindVertexArray(CubeVAO);
