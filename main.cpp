@@ -32,6 +32,9 @@ bool FirstMouse = true;
 float DeltaTime = 0.0f;	// Current - Last
 float LastFrame = 0.0f;
 
+// Lighting
+glm::vec3 LightPos(1.2f, 1.0f, 2.0f);
+
 int main()
 {
 	// --------------------------------Initialization Phase---------------------------------------
@@ -244,14 +247,17 @@ int main()
 
 		// be sure to activate shader when setting uniforms/drawing objects
 		CubeMaterial.Use();
-		CubeMaterial.SetVec3("light.direction", -0.2f, -1.0f, -0.3f);
+		CubeMaterial.SetVec3("light.position", LightPos);
 		CubeMaterial.SetVec3("viewPos", Camera.Position);
-
+	
 		// light properties
 		CubeMaterial.SetVec3("light.ambient", 0.2f, 0.2f, 0.2f);
 		CubeMaterial.SetVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
 		CubeMaterial.SetVec3("light.specular", 1.0f, 1.0f, 1.0f);
-
+		CubeMaterial.SetFloat("light.constant", 1.0f);
+		CubeMaterial.SetFloat("light.linear", 0.09f);
+		CubeMaterial.SetFloat("light.quadratic", 0.032f);
+		
 		// material properties
 		CubeMaterial.SetFloat("material.shininess", 64.0f);
 
@@ -286,6 +292,18 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
+		// also draw the lamp object
+		LightShader.Use();
+		LightShader.SetMat4("projection", Projection);
+		LightShader.SetMat4("view", View);
+		Model = glm::mat4(1.0f);
+		Model = glm::translate(Model, LightPos);
+		Model = glm::scale(Model, glm::vec3(0.2f)); // a smaller cube
+		LightShader.SetMat4("model", Model);
+
+		glBindVertexArray(LightVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
 		// ImGUI window creation
 		ImGui::Begin("My name is window, ImGUI window");
 		// Text that appears in the window
