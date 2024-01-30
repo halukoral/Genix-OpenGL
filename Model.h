@@ -4,10 +4,9 @@
 #include <vector>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include "Mesh.h"
 
 class Shader;
-class Mesh;
-struct Texture;
 
 unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma = false);
 

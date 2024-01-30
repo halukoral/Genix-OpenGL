@@ -9,6 +9,7 @@
 #include "Camera.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#include "Model.h"
 #include "stb_image.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -86,6 +87,9 @@ int main()
 	// Configure global opengl state
 	glEnable(GL_DEPTH_TEST);
 
+	// tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
+	stbi_set_flip_vertically_on_load(true);
+
 	// Initialize ImGUI
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -100,133 +104,11 @@ int main()
 
 	// Build and compile our shader program
 	// ------------------------------------
-	const Shader LightShader("Shaders/LightShader.vert", "Shaders/LightShader.frag");
-	const Shader CubeMaterial("Shaders/Material.vert", "Shaders/Material.frag");
+	Shader ourShader("Shaders/Material.vert", "Shaders/Material.frag");
 	
-	// Set up vertex data (and buffer(s)) and configure vertex attributes
-	// ------------------------------------------------------------------
-	constexpr GLfloat Vertices[] = {
-        // positions          // normals           // texture coords
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-    };
-
-	// positions all containers
-	glm::vec3 CubePositions[] = {
-		glm::vec3( 0.0f,  0.0f,  0.0f),
-		glm::vec3( 2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3( 2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3( 1.3f, -2.0f, -2.5f),
-		glm::vec3( 1.5f,  2.0f, -2.5f),
-		glm::vec3( 1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
-
-	// positions of the point lights
-	glm::vec3 PointLightPositions[] = {
-		glm::vec3( 0.7f,  0.2f,  2.0f),
-		glm::vec3( 2.3f, -3.3f, -4.0f),
-		glm::vec3(-4.0f,  2.0f, -12.0f),
-		glm::vec3( 0.0f,  0.0f, -3.0f)
-	};
-	
-	/* --------------------------------- Initialise VAO & VBO --------------------------------- */
-	/* ---------------------------------------------------------------------------------------- */
-
-	/* Create variables to hold the VBO and the VAO identifiers */
-	GLuint CubeVAO, LightVAO, VBO; //EBO;
-
-	/* Create a new VBO and use the VBO to store the id */
-	glGenBuffers(1, &VBO);
-
-	// Cube
-	// ----
-	glGenVertexArrays(1, &CubeVAO);
-	glBindVertexArray(CubeVAO);
-	
-	/* Make the new VBO active */
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	/* Upload vertex data to the video device */
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	// text coord attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	
-	// Light
-	// -----
-	glGenVertexArrays(1, &LightVAO);
-	glBindVertexArray(LightVAO);
-
-	/* Make the new VBO active */
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	/* Upload vertex data to the video device */
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-
-	// Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	// load textures (we now use a utility function to keep the code more organized)
-	// -----------------------------------------------------------------------------
-	unsigned int DiffuseMap = LoadTexture("Textures/container2.png");
-	unsigned int SpecularMap = LoadTexture("Textures/container2_specular.png");
-
-	// shader configuration
-	// --------------------
-	CubeMaterial.Use();
-	CubeMaterial.SetInt("material.diffuse", 0);
-	CubeMaterial.SetInt("material.specular", 1);
+	// load models
+	// -----------
+	Model ourModel("Resources/Models/Backpack/backpack.obj");
 	
 	// uncomment this call to draw in wireframe polygons.
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -251,109 +133,20 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
 		// be sure to activate shader when setting uniforms/drawing objects
-		CubeMaterial.Use();
-		CubeMaterial.SetVec3("viewPos", Camera.Position);
-		// material properties
-		CubeMaterial.SetFloat("material.shininess", 64.0f);
-	
-		/*
-           Here we set all the uniforms for the 5/6 types of lights we have. We have to set them manually and index 
-           the proper PointLight struct in the array to set each uniform variable. This can be done more code-friendly
-           by defining light types as classes and set their values in there, or by using a more efficient uniform approach
-           by using 'Uniform buffer objects', but that is something we'll discuss in the 'Advanced GLSL' tutorial.
-        */
-        // directional light
-        CubeMaterial.SetVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-        CubeMaterial.SetVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-        CubeMaterial.SetVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-        CubeMaterial.SetVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-        // point light 1
-        CubeMaterial.SetVec3("pointLights[0].position", PointLightPositions[0]);
-        CubeMaterial.SetVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-        CubeMaterial.SetVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
-        CubeMaterial.SetVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
-        CubeMaterial.SetFloat("pointLights[0].constant", 1.0f);
-        CubeMaterial.SetFloat("pointLights[0].linear", 0.09f);
-        CubeMaterial.SetFloat("pointLights[0].quadratic", 0.032f);
-        // point light 2
-        CubeMaterial.SetVec3("pointLights[1].position", PointLightPositions[1]);
-        CubeMaterial.SetVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
-        CubeMaterial.SetVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
-        CubeMaterial.SetVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
-        CubeMaterial.SetFloat("pointLights[1].constant", 1.0f);
-        CubeMaterial.SetFloat("pointLights[1].linear", 0.09f);
-        CubeMaterial.SetFloat("pointLights[1].quadratic", 0.032f);
-        // point light 3
-        CubeMaterial.SetVec3("pointLights[2].position", PointLightPositions[2]);
-        CubeMaterial.SetVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
-        CubeMaterial.SetVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
-        CubeMaterial.SetVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
-        CubeMaterial.SetFloat("pointLights[2].constant", 1.0f);
-        CubeMaterial.SetFloat("pointLights[2].linear", 0.09f);
-        CubeMaterial.SetFloat("pointLights[2].quadratic", 0.032f);
-        // point light 4
-        CubeMaterial.SetVec3("pointLights[3].position", PointLightPositions[3]);
-        CubeMaterial.SetVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
-        CubeMaterial.SetVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
-        CubeMaterial.SetVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
-        CubeMaterial.SetFloat("pointLights[3].constant", 1.0f);
-        CubeMaterial.SetFloat("pointLights[3].linear", 0.09f);
-        CubeMaterial.SetFloat("pointLights[3].quadratic", 0.032f);
-        // spotLight
-        CubeMaterial.SetVec3("spotLight.position", Camera.Position);
-        CubeMaterial.SetVec3("spotLight.direction", Camera.Front);
-        CubeMaterial.SetVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-        CubeMaterial.SetVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-        CubeMaterial.SetVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
-        CubeMaterial.SetFloat("spotLight.constant", 1.0f);
-        CubeMaterial.SetFloat("spotLight.linear", 0.09f);
-        CubeMaterial.SetFloat("spotLight.quadratic", 0.032f);
-        CubeMaterial.SetFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-        CubeMaterial.SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+		ourShader.Use();
 		
-
 		// view/projection transformations
 		glm::mat4 Projection = glm::perspective(glm::radians(Camera.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 		glm::mat4 View = Camera.GetViewMatrix();
-		CubeMaterial.SetMat4("projection", Projection);
-		CubeMaterial.SetMat4("view", View);
+		ourShader.SetMat4("projection", Projection);
+		ourShader.SetMat4("view", View);
 
-		// world transformation
-		glm::mat4 Model = glm::mat4(1.0f);
-		CubeMaterial.SetMat4("model", Model);
-
-		// bind diffuse map
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, DiffuseMap);
-		// bind specular map
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, SpecularMap);
-		
-		// render containers
-		glBindVertexArray(CubeVAO);
-		for (unsigned int i = 0; i < 10; i++)
-		{
-			// calculate the model matrix for each object and pass it to shader before drawing
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, CubePositions[i]);
-			const float Angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(Angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			CubeMaterial.SetMat4("model", model);
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-		// we now draw as many light bulbs as we have point lights.
-		glBindVertexArray(LightVAO);
-		for (unsigned int i = 0; i < 4; i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, PointLightPositions[i]);
-			model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-			LightShader.SetMat4("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		// render the loaded model
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+		ourShader.SetMat4("model", model);
+		ourModel.Draw(ourShader);
 		
 		// ImGUI window creation
 		ImGui::Begin("My name is window, ImGUI window");
@@ -379,13 +172,6 @@ int main()
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-
-	
-	// Optional: de-allocate all resources once they've outlived their purpose:
-	// ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &CubeVAO);
-	glDeleteVertexArrays(1, &LightVAO);
-	glDeleteBuffers(1, &VBO);
 
 	// Glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
