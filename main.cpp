@@ -86,6 +86,10 @@ int main()
 
 	// Configure global opengl state
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	// tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
 	stbi_set_flip_vertically_on_load(true);
@@ -104,11 +108,12 @@ int main()
 
 	// Build and compile our shader program
 	// ------------------------------------
-	Shader ourShader("Shaders/Material.vert", "Shaders/Material.frag");
+	Shader OurShader("Shaders/Material.vert", "Shaders/Material.frag");
+	Shader OutlineShader("Shaders/OutlineShader.vert", "Shaders/OutlineShader.frag");
 	
 	// load models
 	// -----------
-	Model ourModel("Resources/Models/Backpack/backpack.obj");
+	Model OurModel("Resources/Models/Backpack/backpack.obj");
 	
 	// uncomment this call to draw in wireframe polygons.
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -130,23 +135,53 @@ int main()
 		
 		// Clear window
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		// be sure to activate shader when setting uniforms/drawing objects
-		ourShader.Use();
-		
 		// view/projection transformations
 		glm::mat4 Projection = glm::perspective(glm::radians(Camera.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 		glm::mat4 View = Camera.GetViewMatrix();
-		ourShader.SetMat4("projection", Projection);
-		ourShader.SetMat4("view", View);
+		
+		OutlineShader.Use();
+		OutlineShader.SetMat4("projection", Projection);
+		OutlineShader.SetMat4("view", View);
 
+		OurShader.Use();
+		OurShader.SetMat4("projection", Projection);
+		OurShader.SetMat4("view", View);
+		
+		// 1st. render pass, draw objects as normal, writing to the stencil buffer
+		// --------------------------------------------------------------------
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
+		
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-		ourShader.SetMat4("model", model);
-		ourModel.Draw(ourShader);
+		OurShader.SetMat4("model", model);
+		OurModel.Draw(OurShader);
+
+		// 2nd. render pass: now draw slightly scaled versions of the objects, this time disabling stencil writing.
+		// Because the stencil buffer is now filled with several 1s. The parts of the buffer that are 1 are not drawn, thus only drawing 
+		// the objects' size differences, making it look like borders.
+		// -----------------------------------------------------------------------------------------------------------------------------
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+
+		OutlineShader.Use();
+		constexpr float Scale = 1.1f;
+		// render the loaded model
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(Scale, Scale, Scale));	// it's a bit too big for our scene, so scale it down
+		OutlineShader.SetMat4("model", model);
+		OurModel.Draw(OutlineShader);
+
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glEnable(GL_DEPTH_TEST);
+
 		
 		// ImGUI window creation
 		ImGui::Begin("My name is window, ImGUI window");

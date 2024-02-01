@@ -54,6 +54,8 @@
     <Content Include="Shaders\Material.vert" />
     <Content Include="Shaders\LightShader.frag" />
     <Content Include="Shaders\LightShader.vert" />
+    <Content Include="Shaders\OutlineShader.frag" />
+    <Content Include="Shaders\OutlineShader.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
