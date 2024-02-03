@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -82,8 +83,11 @@ int main()
 	// Setup viewport size
 	glViewport(0, 0, BufferWidth, BufferHeight);
 
-	// Configure global opengl state
+	// configure global opengl state
+	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
 	//stbi_set_flip_vertically_on_load(true);
@@ -162,17 +166,6 @@ int main()
         1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
         1.0f,  0.5f,  0.0f,  1.0f,  0.0f
     };
-
-	// transparent vegetation locations
-	// --------------------------------
-	std::vector<glm::vec3> vegetation 
-	{
-		glm::vec3(-1.5f, 0.0f, -0.48f),
-		glm::vec3( 1.5f, 0.0f, 0.51f),
-		glm::vec3( 0.0f, 0.0f, 0.7f),
-		glm::vec3(-0.3f, 0.0f, -2.3f),
-		glm::vec3 (0.5f, 0.0f, -0.6f)
-	};
 	
 	// cube VAO
 	unsigned int cubeVAO, cubeVBO;
@@ -213,11 +206,22 @@ int main()
 	// -------------
 	unsigned int cubeTexture = LoadTexture("Resources/Textures/marble.jpg");
 	unsigned int floorTexture = LoadTexture("Resources/Textures/metal.png");
-	unsigned int transparentTexture = LoadTexture("Resources/Textures/grass.png");
+	unsigned int transparentTexture = LoadTexture("Resources/Textures/window.png");
 	
 	// uncomment this call to draw in wireframe polygons.
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+	// transparent window locations
+	// --------------------------------
+	std::vector<glm::vec3> windows
+	{
+		glm::vec3(-1.5f, 0.0f, -0.48f),
+		glm::vec3( 1.5f, 0.0f, 0.51f),
+		glm::vec3( 0.0f, 0.0f, 0.7f),
+		glm::vec3(-0.3f, 0.0f, -2.3f),
+		glm::vec3( 0.5f, 0.0f, -0.6f)
+	};
+	
 	// shader configuration
 	// --------------------
 	OurShader.Use();
@@ -233,6 +237,15 @@ int main()
 
 		ProcessInput(MainWindow);
 
+		// sort the transparent windows before rendering
+		// ---------------------------------------------
+		std::map<float, glm::vec3> sorted;
+		for (unsigned int i = 0; i < windows.size(); i++)
+		{
+			float distance = glm::length(Camera.Position - windows[i]);
+			sorted[distance] = windows[i];
+		}
+		
 		// Clear window
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -262,13 +275,13 @@ int main()
 		model = glm::mat4(1.0f);
 		OurShader.SetMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		// vegetation
+		// windows (from furthest to nearest)
 		glBindVertexArray(transparentVAO);
 		glBindTexture(GL_TEXTURE_2D, transparentTexture);
-		for (unsigned int i = 0; i < vegetation.size(); i++)
+		for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
 		{
 			model = glm::mat4(1.0f);
-			model = glm::translate(model, vegetation[i]);
+			model = glm::translate(model, it->second);
 			OurShader.SetMat4("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
@@ -279,6 +292,13 @@ int main()
 		glfwSwapBuffers(MainWindow);
 		glfwPollEvents();
 	}
+	
+	// optional: de-allocate all resources once they've outlived their purpose:
+	// ------------------------------------------------------------------------
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &planeVAO);
+	glDeleteBuffers(1, &cubeVBO);
+	glDeleteBuffers(1, &planeVBO);
 
 	// Glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
