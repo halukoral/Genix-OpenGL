@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Genix", "Genix.vcxproj", "{A730F163-DBCE-46D8-B98B-E0FF0D5C666B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Genix-OpenGL", "Genix-OpenGL.vcxproj", "{A730F163-DBCE-46D8-B98B-E0FF0D5C666B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
