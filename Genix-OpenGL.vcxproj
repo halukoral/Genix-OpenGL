@@ -58,6 +58,8 @@
     <Content Include="Shaders\OutlineShader.vert" />
     <Content Include="Shaders\ScreenShader.frag" />
     <Content Include="Shaders\ScreenShader.vert" />
+    <Content Include="Shaders\SkyboxShader.frag" />
+    <Content Include="Shaders\SkyboxShader.vert" />
     <Content Include="src\imgui.ini" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
