@@ -99,89 +99,12 @@ int main()
 
 	// Build and compile our shader program
 	// ------------------------------------
-	Shader OurShader("Shaders/Material.vert", "Shaders/Material.frag");
-	Shader OurShader_2("Shaders/Material_02.vert", "Shaders/Material_02.frag");
+	Shader OurShader("Shaders/Material.vert", "Shaders/Material.frag", "Shaders/GeometryShader.gs");
 
-	// set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    float cubeVertices[] = {
-        // positions         
-        -0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f, -0.5f,  
-         0.5f,  0.5f, -0.5f,  
-         0.5f,  0.5f, -0.5f,  
-        -0.5f,  0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-
-        -0.5f, -0.5f,  0.5f, 
-         0.5f, -0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f, -0.5f,  0.5f, 
-
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-        -0.5f, -0.5f,  0.5f, 
-        -0.5f,  0.5f,  0.5f, 
-
-         0.5f,  0.5f,  0.5f,  
-         0.5f,  0.5f, -0.5f,  
-         0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-
-        -0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f,  0.5f,  
-         0.5f, -0.5f,  0.5f,  
-        -0.5f, -0.5f,  0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-
-        -0.5f,  0.5f, -0.5f, 
-         0.5f,  0.5f, -0.5f,  
-         0.5f,  0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f, -0.5f, 
-    };
-    // cube VAO
-    unsigned int cubeVAO, cubeVBO;
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &cubeVBO);
-    glBindVertexArray(cubeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    // configure a uniform buffer object
-    // ---------------------------------
-    // first. We get the relevant block indices
-    unsigned int uniformBlockIndex_01 = glGetUniformBlockIndex(OurShader.ID, "Matrices");
-    unsigned int uniformBlockIndex_02 = glGetUniformBlockIndex(OurShader_2.ID, "Matrices");
-
-	// then we link each shader's uniform block to this uniform binding point
-    glUniformBlockBinding(OurShader.ID, uniformBlockIndex_01, 0);
-    glUniformBlockBinding(OurShader_2.ID, uniformBlockIndex_02, 0);
-    // Now actually create the buffer
-    unsigned int uboMatrices;
-    glGenBuffers(1, &uboMatrices);
-    glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
-    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    // define the range of the buffer that links to a uniform binding point
-    glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboMatrices, 0, 2 * sizeof(glm::mat4));
-
-    // store the projection matrix (we only do this once now) (note: we're not using zoom anymore by changing the FoV)
-    glm::mat4 projection = glm::perspective(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-    glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
+	// load models
+	// -----------
+	Model Backpack("Resources/Models/BackPack/backpack.obj");
+	
 	// Loop until window closed
 	while (!glfwWindowShouldClose(MainWindow))
 	{
@@ -196,37 +119,26 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// set the view and projection matrix in the uniform block - we only have to do this once per loop iteration.
-		glm::mat4 view = Camera.GetViewMatrix();
-		glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
-		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-		// draw 4 cubes 
-		// Material 01
-		glBindVertexArray(cubeVAO);
+		// configure transformation matrices
+		glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 1.0f, 100.0f);
+		glm::mat4 View = Camera.GetViewMatrix();
+		glm::mat4 Model = glm::mat4(1.0f);
 		OurShader.Use();
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-0.75f, 0.75f, 0.0f)); // move top-left
-		OurShader.SetMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		// Material 02
-		OurShader_2.Use();
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.75f, 0.75f, 0.0f)); // move top-right
-		OurShader_2.SetMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		OurShader.SetMat4("projection", Projection);
+		OurShader.SetMat4("view", View);
+		OurShader.SetMat4("model", Model);
+
+		// add time component to geometry shader in the form of a uniform
+		OurShader.SetFloat("time", static_cast<float>(glfwGetTime()));
+
+		// draw model
+		Backpack.Draw(OurShader);
 
 		// Glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(MainWindow);
 		glfwPollEvents();
 	}
-	
-	// optional: de-allocate all resources once they've outlived their purpose:
-	// ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &cubeVAO);
-	glDeleteBuffers(1, &cubeVBO);
 
 	// Glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
