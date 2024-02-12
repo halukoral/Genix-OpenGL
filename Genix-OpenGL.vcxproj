@@ -57,6 +57,9 @@
     <Content Include="Shaders\LightShader.vert" />
     <Content Include="Shaders\Material_02.frag" />
     <Content Include="Shaders\Material_02.vert" />
+    <Content Include="Shaders\Normal.frag" />
+    <Content Include="Shaders\Normal.gs" />
+    <Content Include="Shaders\Normal.vert" />
     <Content Include="Shaders\OutlineShader.frag" />
     <Content Include="Shaders\OutlineShader.vert" />
     <Content Include="Shaders\ScreenShader.frag" />

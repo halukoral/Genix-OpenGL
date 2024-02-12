@@ -99,10 +99,12 @@ int main()
 
 	// Build and compile our shader program
 	// ------------------------------------
-	Shader OurShader("Shaders/Material.vert", "Shaders/Material.frag", "Shaders/GeometryShader.gs");
+	Shader OurShader("Shaders/Material.vert", "Shaders/Material.frag");
+	Shader NormalShader("Shaders/Normal.vert", "Shaders/Normal.frag", "Shaders/Normal.gs");
 
 	// load models
 	// -----------
+	stbi_set_flip_vertically_on_load(true);
 	Model Backpack("Resources/Models/BackPack/backpack.obj");
 	
 	// Loop until window closed
@@ -128,12 +130,17 @@ int main()
 		OurShader.SetMat4("view", View);
 		OurShader.SetMat4("model", Model);
 
-		// add time component to geometry shader in the form of a uniform
-		OurShader.SetFloat("time", static_cast<float>(glfwGetTime()));
-
 		// draw model
 		Backpack.Draw(OurShader);
 
+		// then draw model with normal visualizing geometry shader
+		NormalShader.Use();
+		NormalShader.SetMat4("projection", Projection);
+		NormalShader.SetMat4("view", View);
+		NormalShader.SetMat4("model", Model);
+
+		Backpack.Draw(NormalShader);
+		
 		// Glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(MainWindow);
