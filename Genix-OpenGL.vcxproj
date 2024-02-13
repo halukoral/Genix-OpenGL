@@ -50,6 +50,10 @@
     <ClInclude Include="src\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Shaders\AA.frag" />
+    <Content Include="Shaders\AA.vert" />
+    <Content Include="Shaders\AA_post.frag" />
+    <Content Include="Shaders\AA_post.vert" />
     <Content Include="Shaders\AsteroidShader.frag" />
     <Content Include="Shaders\AsteroidShader.vert" />
     <Content Include="Shaders\GeometryShader.gs" />
