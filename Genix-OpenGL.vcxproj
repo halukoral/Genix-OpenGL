@@ -50,6 +50,8 @@
     <ClInclude Include="src\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Shaders\AsteroidShader.frag" />
+    <Content Include="Shaders\AsteroidShader.vert" />
     <Content Include="Shaders\GeometryShader.gs" />
     <Content Include="Shaders\Material.frag" />
     <Content Include="Shaders\Material.vert" />
@@ -62,6 +64,8 @@
     <Content Include="Shaders\Normal.vert" />
     <Content Include="Shaders\OutlineShader.frag" />
     <Content Include="Shaders\OutlineShader.vert" />
+    <Content Include="Shaders\PlanetShader.frag" />
+    <Content Include="Shaders\PlanetShader.vert" />
     <Content Include="Shaders\ScreenShader.frag" />
     <Content Include="Shaders\ScreenShader.vert" />
     <Content Include="Shaders\SkyboxShader.frag" />
