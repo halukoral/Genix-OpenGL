@@ -17,13 +17,15 @@ void FramebufferSizeCallback(GLFWwindow* Window, int Width, int Height);
 void MouseCallback(GLFWwindow* Window, double Xpos, double Ypos);
 void ScrollCallback(GLFWwindow* Window, double Xoffset, double Yoffset);
 void ProcessInput(GLFWwindow* Window);
-unsigned int LoadTexture(char const * path);
+unsigned int LoadTexture(char const * path, bool gammaCorrection);
 unsigned int LoadCubemap(std::vector<std::string> faces);
 
 constexpr GLint WIDTH = 1920;
 constexpr GLint HEIGHT = 1080;
 bool blinn = false;
 bool blinnKeyPressed = false;
+bool gammaEnabled = false;
+bool gammaKeyPressed = false;
 
 // Camera
 Camera Camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -129,9 +131,30 @@ int main()
 	// ------------------------------------
 	Shader OurShader("Shaders/LightShader.vert", "Shaders/LightShader.frag");
 
+	// lighting info
+	// -------------
+	glm::vec3 lightPositions[] = {
+		glm::vec3(-3.0f, 0.0f, 0.0f),
+		glm::vec3(-1.0f, 0.0f, 0.0f),
+		glm::vec3 (1.0f, 0.0f, 0.0f),
+		glm::vec3 (3.0f, 0.0f, 0.0f)
+	};
+	glm::vec3 lightColors[] = {
+		glm::vec3(0.25),
+		glm::vec3(0.50),
+		glm::vec3(0.75),
+		glm::vec3(1.00)
+	};
+
+	// load textures
+	// -------------
+	unsigned int floorTexture               = LoadTexture("Resources/Textures/wood.png", false);
+	unsigned int floorTextureGammaCorrected = LoadTexture("Resources/Textures/wood.png", true);
+
     // shader configuration
     // --------------------
     OurShader.Use();
+	OurShader.SetInt("floorTexture", 0);
 
 	// lighting info
 	// -------------
@@ -159,15 +182,19 @@ int main()
 		OurShader.SetMat4("view", view);
 		// set light uniforms
 		OurShader.SetVec3("viewPos", Camera.Position);
-		OurShader.SetVec3("lightPos", lightPos);
+		glUniform3fv(glGetUniformLocation(OurShader.ID, "lightPositions"), 4, &lightPositions[0][0]);
+		glUniform3fv(glGetUniformLocation(OurShader.ID, "lightColors"), 4, &lightColors[0][0]);
 		OurShader.SetInt("blinn", blinn);
+		OurShader.SetInt("gamma", gammaEnabled);
+		
 		// floor
 		glBindVertexArray(planeVAO);
 		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, gammaEnabled ? floorTextureGammaCorrected : floorTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		std::cout << (blinn ? "Blinn-Phong" : "Phong") << std::endl;
-
+		std::cout << (gammaEnabled ? "Gamma enabled" : "Gamma disabled") << std::endl;
 		
 		// Glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -175,6 +202,11 @@ int main()
 		glfwPollEvents();
 	}
 
+	// optional: de-allocate all resources once they've outlived their purpose:
+	// ------------------------------------------------------------------------
+	glDeleteVertexArrays(1, &planeVAO);
+	glDeleteBuffers(1, &planeVBO);
+	
 	// Glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
 	glfwTerminate();
@@ -256,11 +288,21 @@ void ProcessInput(GLFWwindow* Window)
 	{
 		blinnKeyPressed = false;
 	}
+
+	if (glfwGetKey(Window, GLFW_KEY_SPACE) == GLFW_PRESS && !gammaKeyPressed)
+	{
+		gammaEnabled = !gammaEnabled;
+		gammaKeyPressed = true;
+	}
+	if (glfwGetKey(Window, GLFW_KEY_SPACE) == GLFW_RELEASE)
+	{
+		gammaKeyPressed = false;
+	}
 }
 
 // utility function for loading a 2D texture from file
 // ---------------------------------------------------
-unsigned int LoadTexture(char const * path)
+unsigned int LoadTexture(char const * path, bool gammaCorrection)
 {
 	unsigned int TextureId;
 	glGenTextures(1, &TextureId);
@@ -269,6 +311,7 @@ unsigned int LoadTexture(char const * path)
 	unsigned char *Data = stbi_load(path, &Width, &Height, &NrComponents, 0);
 	if (Data)
 	{
+		GLenum internalFormat;
 		GLenum Format;
 		if (NrComponents == 1)
 		{
@@ -276,15 +319,17 @@ unsigned int LoadTexture(char const * path)
 		}
 		else if (NrComponents == 3)
 		{
+			internalFormat = gammaCorrection ? GL_SRGB : GL_RGB;
 			Format = GL_RGB;
 		}
 		else if (NrComponents == 4)
 		{
+			internalFormat = gammaCorrection ? GL_SRGB_ALPHA : GL_RGBA;
 			Format = GL_RGBA;
 		}
 
 		glBindTexture(GL_TEXTURE_2D, TextureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, Format, Width, Height, 0, Format, GL_UNSIGNED_BYTE, Data);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Width, Height, 0, Format, GL_UNSIGNED_BYTE, Data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, Format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat 
