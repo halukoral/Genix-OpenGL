@@ -59,6 +59,10 @@
     <Content Include="Shaders\DebugQuad.frag" />
     <Content Include="Shaders\DebugQuad.vert" />
     <Content Include="Shaders\GeometryShader.gs" />
+    <Content Include="Shaders\HDR.frag" />
+    <Content Include="Shaders\HDR.vert" />
+    <Content Include="Shaders\Lighting.frag" />
+    <Content Include="Shaders\Lighting.vert" />
     <Content Include="Shaders\Material.frag" />
     <Content Include="Shaders\Material.vert" />
     <Content Include="Shaders\LightShader.frag" />
