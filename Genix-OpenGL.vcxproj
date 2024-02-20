@@ -56,6 +56,13 @@
     <Content Include="Shaders\AA_post.vert" />
     <Content Include="Shaders\AsteroidShader.frag" />
     <Content Include="Shaders\AsteroidShader.vert" />
+    <Content Include="Shaders\Bloom.frag" />
+    <Content Include="Shaders\Bloom.vert" />
+    <Content Include="Shaders\BloomLight.frag" />
+    <Content Include="Shaders\Bloom_Final.frag" />
+    <Content Include="Shaders\Bloom_Final.vert" />
+    <Content Include="Shaders\Blur.frag" />
+    <Content Include="Shaders\Blur.vert" />
     <Content Include="Shaders\DebugQuad.frag" />
     <Content Include="Shaders\DebugQuad.vert" />
     <Content Include="Shaders\GeometryShader.gs" />
