@@ -56,6 +56,8 @@
     <Content Include="Shaders\AA_post.vert" />
     <Content Include="Shaders\AsteroidShader.frag" />
     <Content Include="Shaders\AsteroidShader.vert" />
+    <Content Include="Shaders\DebugQuad.frag" />
+    <Content Include="Shaders\DebugQuad.vert" />
     <Content Include="Shaders\GeometryShader.gs" />
     <Content Include="Shaders\Material.frag" />
     <Content Include="Shaders\Material.vert" />
@@ -72,6 +74,10 @@
     <Content Include="Shaders\PlanetShader.vert" />
     <Content Include="Shaders\ScreenShader.frag" />
     <Content Include="Shaders\ScreenShader.vert" />
+    <Content Include="Shaders\ShadowMapping.frag" />
+    <Content Include="Shaders\ShadowMapping.vert" />
+    <Content Include="Shaders\ShadowMappingDepth.frag" />
+    <Content Include="Shaders\ShadowMappingDepth.vert" />
     <Content Include="Shaders\SkyboxShader.frag" />
     <Content Include="Shaders\SkyboxShader.vert" />
     <Content Include="src\imgui.ini" />
