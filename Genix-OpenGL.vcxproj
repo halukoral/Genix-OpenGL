@@ -106,6 +106,12 @@
     <Content Include="Shaders\ShadowMappingDepth.vert" />
     <Content Include="Shaders\SkyboxShader.frag" />
     <Content Include="Shaders\SkyboxShader.vert" />
+    <Content Include="Shaders\SSAO.frag" />
+    <Content Include="Shaders\SSAO.vert" />
+    <Content Include="Shaders\SSAO_Blur.frag" />
+    <Content Include="Shaders\SSAO_Geometry.frag" />
+    <Content Include="Shaders\SSAO_Geometry.vert" />
+    <Content Include="Shaders\SSAO_Lighting.frag" />
     <Content Include="src\imgui.ini" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
