@@ -65,6 +65,12 @@
     <Content Include="Shaders\Blur.vert" />
     <Content Include="Shaders\DebugQuad.frag" />
     <Content Include="Shaders\DebugQuad.vert" />
+    <Content Include="Shaders\DeferredLightBox.frag" />
+    <Content Include="Shaders\DeferredLightBox.vert" />
+    <Content Include="Shaders\DeferredShading.frag" />
+    <Content Include="Shaders\DeferredShading.vert" />
+    <Content Include="Shaders\GBuffer.frag" />
+    <Content Include="Shaders\GBuffer.vert" />
     <Content Include="Shaders\GeometryShader.gs" />
     <Content Include="Shaders\HDR.frag" />
     <Content Include="Shaders\HDR.vert" />
