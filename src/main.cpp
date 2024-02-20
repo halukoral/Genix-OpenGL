@@ -33,6 +33,8 @@ bool gammaKeyPressed = false;
 bool shadows = true;
 bool shadowsKeyPressed = false;
 
+float heightScale = 0.1f;
+
 // meshes
 unsigned int planeVAO;
 
@@ -110,18 +112,20 @@ int main()
 
 	// build and compile shaders
 	// -------------------------
-	Shader shader("Shaders/NormalMapping.vert", "Shaders/NormalMapping.frag");
+	Shader shader("Shaders/ParallaxMapping.vert", "Shaders/ParallaxMapping.frag");
 
 	// load textures
 	// -------------
-	unsigned int diffuseMap = LoadTexture("resources/textures/brickwall.jpg", false);
-	unsigned int normalMap  = LoadTexture("resources/textures/brickwall_normal.jpg", false);
+	unsigned int diffuseMap = LoadTexture("resources/textures/bricks2.jpg", false);
+	unsigned int normalMap  = LoadTexture("resources/textures/bricks2_normal.jpg", false);
+	unsigned int heightMap  = LoadTexture("resources/textures/bricks2_disp.jpg", false);
 
 	// shader configuration
 	// --------------------
 	shader.Use();
 	shader.SetInt("diffuseMap", 0);
 	shader.SetInt("normalMap", 1);
+	shader.SetInt("depthMap", 2);
 
 	// lighting info
 	// -------------
@@ -153,10 +157,13 @@ int main()
 		shader.SetMat4("model", model);
 		shader.SetVec3("viewPos", Camera.Position);
 		shader.SetVec3("lightPos", lightPos);
+		shader.SetFloat("heightScale", heightScale); // adjust with Q and E keys
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalMap);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, heightMap);
 		renderQuad();
 
 		// render light source (simply re-renders a smaller plane at the light's position for debugging/visualization)
@@ -266,6 +273,21 @@ void ProcessInput(GLFWwindow* Window)
 	if (glfwGetKey(Window, GLFW_KEY_SPACE) == GLFW_RELEASE)
 	{
 		gammaKeyPressed = false;
+	}
+
+	if (glfwGetKey(Window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		if (heightScale > 0.0f)
+			heightScale -= 0.0005f;
+		else
+			heightScale = 0.0f;
+	}
+	else if (glfwGetKey(Window, GLFW_KEY_E) == GLFW_PRESS)
+	{
+		if (heightScale < 1.0f)
+			heightScale += 0.0005f;
+		else
+			heightScale = 1.0f;
 	}
 }
 
